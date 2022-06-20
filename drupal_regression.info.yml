@@ -1,0 +1,5 @@
+type: module
+name: Drupal Regression
+description: 'Regression endpoints for automatic tests.'
+package: drupal
+core_version_requirement: ^9

@@ -1,0 +1,15 @@
+drupal_regression.get_all:
+  path: 'api/regression/content/all'
+  defaults:
+    _controller: '\Drupal\drupal_regression\Controller\ApiController::getAll'
+    arguments: [ '@entity_type.bundle.info' ]
+  methods: [GET]
+  requirements:
+    _custom_access: '\Drupal\drupal_regression\Controller\ApiController::access'
+drupal_regression.get_content:
+  path: 'api/regression/content/{entity_type}/{id}'
+  defaults:
+    _controller: '\Drupal\drupal_regression\Controller\ApiController::getContent'
+  methods: [GET]
+  requirements:
+    _custom_access: '\Drupal\drupal_regression\Controller\ApiController::access'

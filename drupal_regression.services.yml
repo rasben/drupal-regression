@@ -1,0 +1,4 @@
+services:
+  drupal_regression.content_generator:
+    class: Drupal\drupal_regression\Services\ContentGenerator
+    arguments: ['@entity_type.manager', '@config.factory', '@entity_field.manager']
