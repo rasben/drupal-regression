@@ -132,6 +132,7 @@ class ApiController extends ControllerBase {
         $endpoints_urls["$entity_type--$entity_bundle.html"] = [
           'file' => "{$entity_type}--{$entity_bundle}.html",
           'url' => "/api/regression/content/{$entity_type}/{$id}",
+          'hash' => $this->getContentHash($entity_type, $id),
         ];
       }
     }
@@ -150,6 +151,33 @@ class ApiController extends ControllerBase {
     return new JsonResponse($response_array);
   }
 
+  private function getContentHash(string $entity_type, int $id) {
+    $html = $this->getContentHTML($entity_type, $id);
+    return hash(md5, $html);
+  }
+
+  private function getContentHTML(string $entity_type, int $id) {
+    $entity = $this->entityTypeManager->getStorage($entity_type)->load($id);
+
+    $view_builder = $this->entityTypeManager->getViewBuilder($entity_type);
+
+    $render_array = $view_builder->view($entity);
+    $html = $this->renderer->render($render_array);
+
+    // Remove empty linebreaks.
+    $html = preg_replace("/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/", "\n", $html);
+
+    // Remove various attributes that will be unique from each session/PR.
+    $html = preg_replace('/js-view-dom-id(?s)(.*)"/', '"', $html);
+    $html = str_replace("node/{$id}", 'node/__ENTITY_ID__', $html);
+    $html = str_replace("node--{$id}", 'node--__ENTITY_ID__', $html);
+    $html = str_replace("p-{$id}", 'p-__ENTITY_ID__', $html);
+    $html = str_replace("paragraph--{$id}", 'paragraph--__ENTITY_ID__', $html);
+    $html = str_replace($_SERVER['HTTP_HOST'], 'localhost', $html);
+
+    return $html;
+  }
+
   /**
    * Load a single piece of content's rendered DOM.
    */
@@ -166,24 +194,8 @@ class ApiController extends ControllerBase {
       );
     }
 
-    $entity = $this->entityTypeManager->getStorage($entity_type)->load($id);
-
-    $view_builder = $this->entityTypeManager->getViewBuilder($entity_type);
-
-    $render_array = $view_builder->view($entity);
-    $html = $this->renderer->render($render_array);
-
-    // Remove empty linebreaks.
-    $html = preg_replace("/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/", "\n", $html);
-
-    // Remove various attributes that will be unique from each session/PR.
-    $html = preg_replace('/js-view-dom-id(?s)(.*)"/', '"', $html);
-    $html = str_replace("node/{$id}", 'node/__ENTITY_ID__', $html);
-    $html = str_replace("p-{$id}", 'p-__ENTITY_ID__', $html);
-    $html = str_replace($_SERVER['HTTP_HOST'], 'localhost', $html);
-
     return new Response(
-      $html,
+      $this->getContentHTML($entity_type, $id),
       Response::HTTP_OK,
       ['content-type' => 'text/html']
     );
