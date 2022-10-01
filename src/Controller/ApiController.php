@@ -101,8 +101,8 @@ class ApiController extends ControllerBase {
    *   The formatted JSON response.
    */
   public function getAll() {
+    $endpoints = $this->state()->get('drupal_regression.endpoints', []);
     $endpoints_urls = [];
-    $endpoints = [];
     $messages = [];
 
     $entity_bundle_mapping = [
