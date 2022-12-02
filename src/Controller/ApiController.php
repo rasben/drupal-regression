@@ -153,7 +153,7 @@ class ApiController extends ControllerBase {
 
   private function getContentHash(string $entity_type, int $id) {
     $html = $this->getContentHTML($entity_type, $id);
-    return hash(md5, $html);
+    return hash('md5', $html);
   }
 
   private function getContentHTML(string $entity_type, int $id) {
